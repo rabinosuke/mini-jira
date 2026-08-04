@@ -1,0 +1,96 @@
+// mini-Jira データベース設計
+// 図で合意した5テーブル（Project / User / ProjectMember / Task / Comment）
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int             @id @default(autoincrement())
+  name         String
+  email        String          @unique
+  role         String          @default("developer") // "manager" or "developer"
+  passwordHash String          @default("") // bcryptのハッシュ（平文は保存しない）
+  members      ProjectMember[]
+  assigned     Task[]          @relation("assignee")
+  reported     Task[]          @relation("reporter")
+  comments     Comment[]
+  sessions     Session[]
+  activities   Activity[]
+  createdAt    DateTime        @default(now())
+}
+
+// ログインセッション（cookieに入るのはこの id だけ。中身はサーバー側で管理）
+model Session {
+  id        String   @id // ランダムな長い文字列
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  expiresAt DateTime // 有効期限
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  name      String
+  key       String   @unique // 例: "MJ"
+  members   ProjectMember[]
+  tasks     Task[]
+  createdAt DateTime @default(now())
+}
+
+// 多対多をつなぐ中間テーブル（1人が複数プロジェクトを掛け持ちできる）
+model ProjectMember {
+  id        Int     @id @default(autoincrement())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+
+  @@unique([projectId, userId]) // 同じ人が同じPJに二重登録されない
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  project     Project   @relation(fields: [projectId], references: [id])
+  projectId   Int
+  assignee    User?     @relation("assignee", fields: [assigneeId], references: [id])
+  assigneeId  Int? // 担当者（未割当もOKなので ?）
+  reporter    User      @relation("reporter", fields: [reporterId], references: [id])
+  reporterId  Int // 作成者（管理者）
+  title       String
+  description String    @default("")
+  type        String    @default("task") // task / bug / story / epic
+  status      String    @default("todo") // todo / in_progress / in_review / done
+  priority    String    @default("medium") // low / medium / high
+  dueDate     DateTime?
+  comments    Comment[]
+  activities  Activity[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  body      String
+  createdAt DateTime @default(now())
+}
+
+// 変更履歴（誰がいつ何を変えたか）
+model Activity {
+  id        Int      @id @default(autoincrement())
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  message   String // 例: "ステータス: 未着手 → 作業中"
+  createdAt DateTime @default(now())
+}

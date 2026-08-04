@@ -1,0 +1,59 @@
+# ===========================================
+# 開発環境用 Docker Compose設定
+# 使い方: docker compose up
+#   → ブラウザで http://localhost:5173 を開く
+# ===========================================
+services:
+  # データベース（PostgreSQL・本番と揃える）
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: minijira
+      POSTGRES_PASSWORD: minijira_dev_pw
+      POSTGRES_DB: minijira
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 初回起動時にテスト用DBも作る（テストは本番用DBを汚さない）
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U minijira"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432" # 手元からDBを覗きたいとき用
+
+  # バックエンド（Node + Hono + Prisma）
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://minijira:minijira_dev_pw@db:5432/minijira?schema=public
+      # テスト用DB（npm test が使う・本番用DBとは別）
+      - TEST_DATABASE_URL=postgresql://minijira:minijira_dev_pw@db:5432/minijira_test?schema=public
+      # Docker上でファイル変更を検知させる（tsx watch のホットリロード用）
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=300
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # フロントエンド（React + Vite + TypeScript）
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:
+  pgdata:

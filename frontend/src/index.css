@@ -1,0 +1,574 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Hiragino Sans",
+    "Noto Sans JP",
+    sans-serif;
+  background: #f4f5f7;
+  color: #172b4d;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.project-select {
+  padding: 6px 10px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-box {
+  padding: 6px 10px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 200px;
+}
+
+.current-user {
+  font-size: 13px;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.logout-btn {
+  padding: 6px 12px;
+  border: 1px solid #dfe1e6;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #f4f5f7;
+}
+
+/* ===== ログイン画面 ===== */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(9, 30, 66, 0.15);
+  padding: 32px;
+  width: 360px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+.login-sub {
+  margin: 4px 0 20px;
+  text-align: center;
+  color: #5e6c84;
+  font-size: 14px;
+}
+
+.login-error {
+  background: #faece7;
+  color: #a5391b;
+  border: 1px solid #f0997b;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.login-hint {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: #5e6c84;
+  line-height: 1.6;
+}
+
+.modal-readonly {
+  background: #fff7e6;
+  color: #7a5c00;
+  border: 1px solid #f5d98b;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* ===== コメント欄 ===== */
+.comments {
+  margin-top: 20px;
+  border-top: 1px solid #dfe1e6;
+  padding-top: 16px;
+}
+
+.comments-title {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.comments-empty {
+  font-size: 13px;
+  color: #5e6c84;
+  margin: 0 0 12px;
+}
+
+.comment {
+  background: #f4f5f7;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.comment-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.comment-user {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.comment-date {
+  font-size: 11px;
+  color: #5e6c84;
+}
+
+.comment-body {
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-form textarea {
+  padding: 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.comment-form button {
+  align-self: flex-end;
+}
+
+/* ===== 変更履歴 ===== */
+.activities {
+  margin-top: 20px;
+  border-top: 1px solid #dfe1e6;
+  padding-top: 16px;
+}
+
+.activity {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+  color: #5e6c84;
+  padding: 4px 0;
+}
+
+.activity-user {
+  font-weight: 600;
+  color: #172b4d;
+  white-space: nowrap;
+}
+
+.activity-msg {
+  flex: 1;
+  color: #172b4d;
+}
+
+.activity-date {
+  white-space: nowrap;
+}
+
+.filter {
+  font-size: 13px;
+  color: #5e6c84;
+}
+
+.filter select,
+.new-task select,
+.new-task input {
+  margin-left: 8px;
+  padding: 6px 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.new-task {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.new-task input {
+  flex: 1;
+  min-width: 200px;
+  margin-left: 0;
+}
+
+.new-task button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0052cc;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.new-task button:hover {
+  background: #0747a6;
+}
+
+.error-banner {
+  background: #faece7;
+  color: #a5391b;
+  border: 1px solid #f0997b;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.loading {
+  color: #5e6c84;
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.column {
+  background: #ebecf0;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 200px;
+}
+
+.column-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5e6c84;
+  padding: 4px 6px 10px;
+  text-transform: none;
+}
+
+.count {
+  display: inline-block;
+  background: #dfe1e6;
+  border-radius: 10px;
+  padding: 0 8px;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.2);
+  cursor: pointer;
+}
+
+.card:hover {
+  background: #f7f8fa;
+}
+
+.type-badge {
+  display: inline-block;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.card-title {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #5e6c84;
+  margin-bottom: 8px;
+}
+
+.priority {
+  font-weight: 600;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.move-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.card-actions button {
+  border: 1px solid #dfe1e6;
+  background: #fafbfc;
+  border-radius: 4px;
+  padding: 2px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.card-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.delete-btn {
+  color: #d85a30;
+  border-color: #f0997b !important;
+}
+
+.delete-btn:hover {
+  background: #faece7 !important;
+}
+
+/* ===== 詳細/編集モーダル ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 30, 66, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+  z-index: 100;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  width: 520px;
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.3);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-key {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5e6c84;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #5e6c84;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  flex: 1;
+}
+
+.field > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5e6c84;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-meta {
+  font-size: 12px;
+  color: #5e6c84;
+  margin: 4px 0 18px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-cancel {
+  padding: 8px 16px;
+  border: 1px solid #dfe1e6;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-save {
+  padding: 8px 20px;
+  border: none;
+  background: #0052cc;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* =========================================================
+   レスポンシブ対応
+   - タブレット/スマホ(≤768px): ヘッダーを縦積み、カンバンは横スクロール
+   - スマホ(≤480px): フォーム/モーダルをさらに縦に
+   ========================================================= */
+@media (max-width: 768px) {
+  .app {
+    padding: 16px 10px;
+  }
+
+  /* ヘッダーを縦に積む */
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .header-left,
+  .header-right {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .search-box {
+    flex: 1;
+    width: auto;
+    min-width: 140px;
+  }
+
+  /* カンバンを4列固定 → 横スクロール（Trello/Jiraアプリ方式） */
+  .board {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .column {
+    flex: 0 0 260px; /* 各列は固定幅。横にスワイプして見る */
+  }
+}
+
+@media (max-width: 480px) {
+  /* 作成フォームの各要素を全幅に */
+  .new-task input,
+  .new-task select,
+  .new-task button {
+    width: 100%;
+  }
+  /* モーダル内の2列並びを縦に */
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .modal {
+    padding: 16px;
+  }
+}
