@@ -1,7 +1,9 @@
 # ---- ビルド段階：Reactアプリを静的ファイルにビルド ----
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+# lockfileは別プラットフォーム生成だとrollupのバイナリで詰まる(npm#4828)ため、
+# package.json だけコピーしてビルド環境で解決し直す
+COPY package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
