@@ -2,6 +2,7 @@
 import { Hono } from "hono";
 import bcrypt from "bcryptjs";
 import type { AppEnv } from "../env";
+import { allowRegistration } from "../env";
 import { prisma } from "../prisma";
 import { loginSchema, registerSchema } from "../lib/schemas";
 import { checkRateLimit, resetRateLimit } from "../lib/rateLimit";
@@ -28,6 +29,9 @@ auth.post("/login", async (c) => {
 });
 
 auth.post("/register", async (c) => {
+  if (!allowRegistration) {
+    return c.json({ error: "新規登録は現在受け付けていません" }, 403);
+  }
   if (!checkRateLimit(c)) {
     return c.json({ error: "試行回数が多すぎます。しばらく待ってから再度お試しください" }, 429);
   }

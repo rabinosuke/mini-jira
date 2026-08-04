@@ -7,6 +7,9 @@ type Props = {
   onLoggedIn: (user: User) => void; // ログイン/登録成功を親(App)に知らせる
 };
 
+// 新規登録を表示するか（本番ビルドでは未設定＝非表示）
+const allowRegistration = import.meta.env.VITE_ALLOW_REGISTRATION === "true";
+
 export default function Login({ onLoggedIn }: Props) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -79,9 +82,11 @@ export default function Login({ onLoggedIn }: Props) {
           {busy ? "処理中..." : isRegister ? "登録してはじめる" : "ログイン"}
         </button>
 
-        <button type="button" className="login-toggle" onClick={toggleMode}>
-          {isRegister ? "アカウントを持っている → ログイン" : "アカウントを作る → 新規登録"}
-        </button>
+        {allowRegistration && (
+          <button type="button" className="login-toggle" onClick={toggleMode}>
+            {isRegister ? "アカウントを持っている → ログイン" : "アカウントを作る → 新規登録"}
+          </button>
+        )}
       </form>
     </div>
   );
