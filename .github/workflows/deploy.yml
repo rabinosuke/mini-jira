@@ -1,6 +1,17 @@
 name: Deploy to Production
 
-# 手動トリガー（人間がボタンを押す）。CIが緑なのを確認してから実行する。
+# 🚨 手動トリガーのみ（デプロイは人間が引き金を引く）。CIが緑なのを確認してから実行する。
+#
+# 使い方（gh コマンド）:
+#   gh workflow run deploy.yml -R rabinosuke/mini-jira
+#
+# 進捗確認:
+#   gh run list -R rabinosuke/mini-jira --workflow deploy.yml --limit 3
+#
+# ※ migrate は backend 起動時に自動実行（prisma migrate deploy）されるため
+#   run_migrate のような選択は不要。
+#
+# または GitHub Actions UI から "Run workflow"。
 on:
   workflow_dispatch:
 
