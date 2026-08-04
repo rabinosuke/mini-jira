@@ -82,14 +82,6 @@ export default function Login({ onLoggedIn }: Props) {
         <button type="button" className="login-toggle" onClick={toggleMode}>
           {isRegister ? "アカウントを持っている → ログイン" : "アカウントを作る → 新規登録"}
         </button>
-
-        {!isRegister && (
-          <p className="login-hint">
-            お試し用: manager@example.com（管理者） / dev1@example.com（開発者）
-            <br />
-            パスワードはどちらも password
-          </p>
-        )}
       </form>
     </div>
   );
