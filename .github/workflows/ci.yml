@@ -1,0 +1,72 @@
+name: CI
+
+# main への push と、main 宛の全PRで自動実行（＝デプロイ前のゲート）
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# GitHub Actions runner の Node.js 24 先行移行（deprecation warning 回避）
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  # ---- バックエンド：Postgresを立ててテスト＋lint ----
+  backend:
+    name: Backend (test + lint)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: minijira
+          POSTGRES_PASSWORD: test_pw
+          POSTGRES_DB: minijira_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U minijira"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      TEST_DATABASE_URL: postgresql://minijira:test_pw@localhost:5432/minijira_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm test
+
+  # ---- フロントエンド：lint＋ビルドが通るか ----
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build

@@ -134,6 +134,20 @@ docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
 ```
 
+## GitHub Secrets（deploy.yml 用）
+
+GitHub → リポジトリ → Settings → Secrets and variables → Actions → New repository secret で登録：
+
+| 名前 | 値 |
+|------|----|
+| `DEPLOY_HOST` | VPSのホスト名 or IP |
+| `DEPLOY_USER` | SSHログインユーザー |
+| `DEPLOY_SSH_KEY` | SSH秘密鍵（このユーザーでVPSに入れる鍵） |
+| `DEPLOY_PATH` | VPS上の mini-jira ディレクトリ（例: /home/blog/mini-jira） |
+
+- **CI（ci.yml）**: push/PRで自動実行（テスト＋lint＋build）。Secrets不要。
+- **Deploy（deploy.yml）**: Actionsタブから手動実行（workflow_dispatch）。上のSecretsが必要。
+
 ## 公開前チェック
 
 - [ ] `.env` の POSTGRES_PASSWORD / ADMIN_PASSWORD を強力な値にした

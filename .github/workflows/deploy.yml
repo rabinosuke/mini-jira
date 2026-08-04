@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+# 手動トリガー（人間がボタンを押す）。CIが緑なのを確認してから実行する。
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # SSHでVPSに入り、mini-jira を更新デプロイする。
+      # 必要な Secrets:
+      #   DEPLOY_HOST     VPSのホスト名/IP
+      #   DEPLOY_USER     SSHユーザー
+      #   DEPLOY_SSH_KEY  SSH秘密鍵
+      #   DEPLOY_PATH     VPS上の mini-jira ディレクトリ
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "==> git pull"
+            git pull origin main
+
+            echo "==> build"
+            docker compose -f docker-compose.prod.yml build
+
+            echo "==> up（backendはentrypointで自動的に prisma migrate deploy を実行）"
+            docker compose -f docker-compose.prod.yml up -d
+
+            echo "==> 起動待ち"
+            sleep 10
+
+            echo "==> 疎通確認"
+            curl -sf -o /dev/null https://jira.coco-lab.io/api/health \
+              && echo "✅ サイト応答OK" \
+              || (echo "❌ サイト無応答" && exit 1)
+
+            echo "==> Deploy 完了"
