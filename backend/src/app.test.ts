@@ -197,6 +197,102 @@ describe("変更履歴", () => {
   });
 });
 
+describe("ユーザー作成・メンバー管理", () => {
+  let createdUserId = 0;
+
+  it("管理者はユーザーを作成できる(201)", async () => {
+    const res = await req(
+      "/api/users",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: "New Dev",
+          email: "new@test.com",
+          password: "secret123",
+          role: "developer",
+        }),
+      },
+      managerCookie,
+    );
+    expect(res.status).toBe(201);
+    const u = (await res.json()) as { id: number; role: string };
+    createdUserId = u.id;
+    expect(u.role).toBe("developer");
+  });
+
+  it("作成されたユーザーは初期パスワードでログインできる", async () => {
+    const res = await req("/api/login", {
+      method: "POST",
+      headers: { "X-Forwarded-For": "198.51.100.5" }, // レート制限を他テストと分離
+      body: JSON.stringify({ email: "new@test.com", password: "secret123" }),
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it("開発者はユーザーを作成できない(403)", async () => {
+    const res = await req(
+      "/api/users",
+      { method: "POST", body: JSON.stringify({ name: "X", email: "x@test.com", password: "secret123" }) },
+      devCookie,
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("重複メールは409", async () => {
+    const res = await req(
+      "/api/users",
+      { method: "POST", body: JSON.stringify({ name: "Dup", email: "new@test.com", password: "secret123" }) },
+      managerCookie,
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it("管理者は作成したユーザーをプロジェクトメンバーに追加できる(201)", async () => {
+    const res = await req(
+      `/api/projects/${projectId}/members`,
+      { method: "POST", body: JSON.stringify({ userId: createdUserId }) },
+      managerCookie,
+    );
+    expect(res.status).toBe(201);
+  });
+
+  it("メンバー一覧に追加したユーザーが含まれる", async () => {
+    const res = await req(`/api/projects/${projectId}/members`, {}, devCookie);
+    const members = (await res.json()) as Array<{ id: number }>;
+    expect(members.some((m) => m.id === createdUserId)).toBe(true);
+  });
+
+  it("同じユーザーの二重追加は409", async () => {
+    const res = await req(
+      `/api/projects/${projectId}/members`,
+      { method: "POST", body: JSON.stringify({ userId: createdUserId }) },
+      managerCookie,
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it("開発者はメンバーを追加できない(403)", async () => {
+    const res = await req(
+      `/api/projects/${projectId}/members`,
+      { method: "POST", body: JSON.stringify({ userId: createdUserId }) },
+      devCookie,
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("管理者はメンバーを削除できる(200)", async () => {
+    const res = await req(
+      `/api/projects/${projectId}/members/${createdUserId}`,
+      { method: "DELETE" },
+      managerCookie,
+    );
+    expect(res.status).toBe(200);
+    const list = await req(`/api/projects/${projectId}/members`, {}, managerCookie);
+    const members = (await list.json()) as Array<{ id: number }>;
+    expect(members.some((m) => m.id === createdUserId)).toBe(false);
+  });
+});
+
 describe("セキュリティ", () => {
   it("レスポンスにセキュリティヘッダが付く", async () => {
     const res = await req("/api/health");

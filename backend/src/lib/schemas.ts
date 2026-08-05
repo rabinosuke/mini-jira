@@ -38,3 +38,16 @@ export const projectCreateSchema = z.object({
   name: z.string().min(1),
   key: z.string().min(1).max(10),
 });
+
+// 管理者がユーザーを新規作成するときの入力（本人が後でログインできる）
+export const userCreateSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+  role: z.enum(["manager", "developer"]).default("developer"),
+});
+
+// プロジェクトにメンバーを追加するときの入力
+export const memberAddSchema = z.object({
+  userId: z.number().int(),
+});

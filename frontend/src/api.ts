@@ -60,6 +60,16 @@ export function getUsers(): Promise<User[]> {
   return request<User[]>("/users");
 }
 
+// 管理者がユーザーを新規作成（本人は初期パスワードでログインできる）
+export function createUser(data: {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}): Promise<User> {
+  return request<User>("/users", jsonInit("POST", data));
+}
+
 // ---------- プロジェクト ----------
 export function getProjects(): Promise<Project[]> {
   return request<Project[]>("/projects");
@@ -67,6 +77,19 @@ export function getProjects(): Promise<Project[]> {
 
 export function createProject(name: string, key: string): Promise<Project> {
   return request<Project>("/projects", jsonInit("POST", { name, key }));
+}
+
+// ---------- プロジェクトメンバー ----------
+export function getProjectMembers(projectId: number): Promise<User[]> {
+  return request<User[]>(`/projects/${projectId}/members`);
+}
+
+export function addProjectMember(projectId: number, userId: number): Promise<User> {
+  return request<User>(`/projects/${projectId}/members`, jsonInit("POST", { userId }));
+}
+
+export async function removeProjectMember(projectId: number, userId: number): Promise<void> {
+  await request<{ ok: boolean }>(`/projects/${projectId}/members/${userId}`, { method: "DELETE" });
 }
 
 // ---------- タスク ----------

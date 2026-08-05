@@ -10,6 +10,7 @@ type Props = {
   currentProjectId: number | null;
   onSelectProject: (id: number) => void;
   onToggleNewProject: () => void;
+  onOpenAdmin: () => void;
   searchInput: string;
   onSearchChange: (value: string) => void;
   users: User[];
@@ -25,6 +26,7 @@ export default function Header({
   currentProjectId,
   onSelectProject,
   onToggleNewProject,
+  onOpenAdmin,
   searchInput,
   onSearchChange,
   users,
@@ -50,6 +52,11 @@ export default function Header({
         {isManager && (
           <button className="logout-btn" onClick={onToggleNewProject}>
             ＋ プロジェクト
+          </button>
+        )}
+        {isManager && (
+          <button className="logout-btn" onClick={onOpenAdmin}>
+            👤 管理
           </button>
         )}
       </div>

@@ -4,6 +4,7 @@
 export type User = {
   id: number;
   name: string;
+  email?: string; // 一覧・メンバー管理では返るが、/me などでは省略される
   role: string; // "manager" or "developer"
 };
 

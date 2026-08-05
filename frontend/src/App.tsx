@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Task, User, Project } from "./types";
 import {
   getUsers,
+  createUser,
   getTasks,
   createTask,
   updateTaskStatus,
@@ -11,6 +12,9 @@ import {
   logout,
   getProjects,
   createProject,
+  getProjectMembers,
+  addProjectMember,
+  removeProjectMember,
   setUnauthorizedHandler,
 } from "./api";
 import Login from "./Login";
@@ -18,6 +22,7 @@ import TaskModal from "./TaskModal";
 import Header from "./components/Header";
 import NewTaskForm from "./components/NewTaskForm";
 import Board from "./components/Board";
+import AdminPanel from "./components/AdminPanel";
 
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : "エラーが発生しました";
@@ -27,7 +32,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  // members = 現在のプロジェクトのメンバー（担当者候補・フィルタに使う）
+  const [members, setMembers] = useState<User[]>([]);
+  // allUsers = 全ユーザー（管理者パネルのユーザー一覧・メンバー追加候補に使う）
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filterUser, setFilterUser] = useState<number | "all">("all");
   const [editing, setEditing] = useState<Task | null>(null);
   const [searchInput, setSearchInput] = useState("");
@@ -35,6 +43,7 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   const [showNewProject, setShowNewProject] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [newProjName, setNewProjName] = useState("");
   const [newProjKey, setNewProjKey] = useState("");
   const [projError, setProjError] = useState("");
@@ -75,12 +84,9 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // ログインしたらユーザー・プロジェクトを取得
+  // ログインしたらプロジェクトを取得
   useEffect(() => {
     if (!currentUser) return;
-    getUsers()
-      .then(setUsers)
-      .catch((e) => setErrorMsg(errMsg(e)));
     getProjects()
       .then((ps) => {
         setProjects(ps);
@@ -88,6 +94,28 @@ export default function App() {
       })
       .catch((e) => setErrorMsg(errMsg(e)));
   }, [currentUser]);
+
+  // 管理者だけ全ユーザーを取得（管理者パネル用）
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== "manager") {
+      setAllUsers([]);
+      return;
+    }
+    getUsers()
+      .then(setAllUsers)
+      .catch((e) => setErrorMsg(errMsg(e)));
+  }, [currentUser]);
+
+  // プロジェクトを選ぶたびに、そのプロジェクトのメンバーを取得
+  useEffect(() => {
+    if (!currentUser || !currentProjectId) {
+      setMembers([]);
+      return;
+    }
+    getProjectMembers(currentProjectId)
+      .then(setMembers)
+      .catch((e) => setErrorMsg(errMsg(e)));
+  }, [currentUser, currentProjectId]);
 
   useEffect(() => {
     reload();
@@ -109,10 +137,12 @@ export default function App() {
     await logout();
     setCurrentUser(null);
     setTasks([]);
-    setUsers([]);
+    setMembers([]);
+    setAllUsers([]);
     setFilterUser("all");
     setProjects([]);
     setCurrentProjectId(null);
+    setShowAdmin(false);
   }
 
   async function handleCreateTask(data: {
@@ -168,10 +198,41 @@ export default function App() {
     }
   }
 
+  // 管理者パネル：ユーザー作成（作成後は全ユーザー一覧に反映）
+  async function handleCreateUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) {
+    const u = await createUser(data);
+    setAllUsers((prev) => [...prev, u]);
+  }
+
+  // 現在プロジェクトのメンバーを取り直す
+  async function refreshMembers() {
+    if (!currentProjectId) return;
+    const m = await getProjectMembers(currentProjectId);
+    setMembers(m);
+  }
+
+  async function handleAddMember(userId: number) {
+    if (!currentProjectId) return;
+    await addProjectMember(currentProjectId, userId);
+    await refreshMembers();
+  }
+
+  async function handleRemoveMember(userId: number) {
+    if (!currentProjectId) return;
+    await removeProjectMember(currentProjectId, userId);
+    await refreshMembers();
+  }
+
   if (checking) return <div className="app">読み込み中...</div>;
   if (!currentUser) return <Login onLoggedIn={onLoggedIn} />;
 
   const isManager = currentUser.role === "manager";
+  const currentProject = projects.find((p) => p.id === currentProjectId) ?? null;
 
   return (
     <div className="app">
@@ -182,9 +243,10 @@ export default function App() {
         currentProjectId={currentProjectId}
         onSelectProject={setCurrentProjectId}
         onToggleNewProject={() => setShowNewProject((v) => !v)}
+        onOpenAdmin={() => setShowAdmin(true)}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        users={users}
+        users={members}
         filterUser={filterUser}
         onFilterChange={setFilterUser}
         onLogout={onLogout}
@@ -212,7 +274,7 @@ export default function App() {
         </form>
       )}
 
-      {isManager && <NewTaskForm users={users} onCreate={handleCreateTask} />}
+      {isManager && <NewTaskForm users={members} onCreate={handleCreateTask} />}
 
       {loadingTasks && tasks.length === 0 ? (
         <div className="loading">読み込み中...</div>
@@ -230,13 +292,25 @@ export default function App() {
       {editing && (
         <TaskModal
           task={editing}
-          users={users}
+          users={members}
           canEdit={isManager || editing.assigneeId === currentUser.id}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
             reload();
           }}
+        />
+      )}
+
+      {isManager && showAdmin && (
+        <AdminPanel
+          project={currentProject}
+          allUsers={allUsers}
+          members={members}
+          onCreateUser={handleCreateUser}
+          onAddMember={handleAddMember}
+          onRemoveMember={handleRemoveMember}
+          onClose={() => setShowAdmin(false)}
         />
       )}
     </div>

@@ -572,3 +572,123 @@ body {
     padding: 16px;
   }
 }
+
+/* =========================================================
+   管理者パネル（ユーザー作成 / メンバー管理）
+   ========================================================= */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #dfe1e6;
+  margin-bottom: 16px;
+}
+
+.admin-tab {
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5e6c84;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.admin-tab.active {
+  color: #0052cc;
+  border-bottom-color: #0052cc;
+}
+
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.admin-form .comments-title {
+  width: 100%;
+  margin: 0 0 4px;
+}
+
+.admin-form input,
+.admin-form select {
+  padding: 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  flex: 1;
+  min-width: 120px;
+}
+
+.admin-ok {
+  width: 100%;
+  color: #216e4e;
+  font-size: 13px;
+}
+
+.admin-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid #f0f1f3;
+  font-size: 14px;
+}
+
+.admin-name {
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.admin-muted {
+  color: #5e6c84;
+  font-size: 13px;
+  flex: 1;
+}
+
+.admin-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5e6c84;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+
+.admin-remove {
+  border: 1px solid #f0997b;
+  background: #faece7;
+  color: #a5391b;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.admin-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
